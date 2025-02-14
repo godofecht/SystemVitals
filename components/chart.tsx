@@ -141,7 +141,7 @@ export function Chart({
     },
     interaction: {
       intersect: false,
-      mode: 'index',
+      mode: 'index' as const,
     },
   }
 
