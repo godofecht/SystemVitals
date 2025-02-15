@@ -39,4 +39,3 @@ export function ThreeScene() {
 
   return <div ref={containerRef} className="h-[400px]" />
 }
-//
