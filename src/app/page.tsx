@@ -9,7 +9,15 @@ export default function Home() {
   const [isAboutOpen, setIsAboutOpen] = useState(false);
   const { connect, disconnect, data, latestMetrics, loading } = useStore()
   const metrics = latestMetrics || {
-    cpu: 0, memory: 0, gpu: 0, networkIn: 0, networkOut: 0, temperature: 0
+    cpu: 0, 
+    memory: 0, 
+    gpu: 0, 
+    networkIn: 0, 
+    networkOut: 0, 
+    temperature: 0,
+    networkInterface: '',
+    networkSpeed: 0,
+    timestamp: Date.now()
   };
 
   useEffect(() => {

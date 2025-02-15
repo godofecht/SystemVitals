@@ -8,6 +8,12 @@ interface SystemMetrics {
   gpu: number;
   networkIn: number;
   networkOut: number;
+  networkInterface: string;
+  networkSpeed: number;
+  gpuTemp?: number;
+  gpuMemoryTotal?: number;
+  gpuMemoryUsed?: number;
+  gpuUtilization?: number;
 }
 
 interface Store {
