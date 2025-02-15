@@ -6,8 +6,10 @@ const nextConfig = {
   images: {
     unoptimized: true,
   },
-  // Required for GitHub Pages
-  basePath: process.env.NEXT_PUBLIC_BASE_PATH,
+  // Update basePath to be absolute
+  basePath: '/systemvitals',
+  // Add assetPrefix for GitHub Pages
+  assetPrefix: '/systemvitals',
 }
 
 module.exports = nextConfig 
