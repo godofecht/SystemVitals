@@ -28,9 +28,6 @@ jobs:
         env:
           NEXT_PUBLIC_BASE_PATH: /systemvitals
 
-      - name: Export
-        run: npm run export
-
       - name: Add .nojekyll file
         run: touch ./out/.nojekyll
 
