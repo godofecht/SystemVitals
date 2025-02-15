@@ -33,6 +33,6 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/yourusername/techiejs.git"
+    "url": "git@github.com:godofecht/SystemVitals.git"
   }
 }
