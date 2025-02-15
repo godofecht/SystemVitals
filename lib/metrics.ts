@@ -1,49 +1,64 @@
-// New file for client-side metrics collection
+// Add this check at the top
+const isClient = typeof window !== 'undefined';
 
-// Network monitoring with Performance API
+// Initialize variables only on client
 let networkIn = 0;
 let networkOut = 0;
+let gpuUsage = 0;
 
 // Track network performance
 let lastTotalBytes = 0;
 let lastTimestamp = performance.now();
 
-// Create performance observer for network resources
-const observer = new PerformanceObserver((list) => {
-  const entries = list.getEntries() as PerformanceResourceTiming[];
-  const currentTime = performance.now();
-  
-  let totalBytes = 0;
-  entries.forEach(entry => {
-    // Sum up transfer size, encoded body size, and decoded body size
-    totalBytes += entry.transferSize || 0;
-    totalBytes += entry.encodedBodySize || 0;
-    totalBytes += entry.decodedBodySize || 0;
+// Only run this code on client
+if (isClient) {
+  // Network monitoring setup
+  const observer = new PerformanceObserver((list) => {
+    const entries = list.getEntries() as PerformanceResourceTiming[];
+    const currentTime = performance.now();
+    
+    let totalBytes = 0;
+    entries.forEach(entry => {
+      // Sum up transfer size, encoded body size, and decoded body size
+      totalBytes += entry.transferSize || 0;
+      totalBytes += entry.encodedBodySize || 0;
+      totalBytes += entry.decodedBodySize || 0;
+    });
+
+    // Calculate speed in MB/s
+    const timeDiff = (currentTime - lastTimestamp) / 1000; // Convert to seconds
+    if (timeDiff > 0 && totalBytes > lastTotalBytes) {
+      const bytesDiff = totalBytes - lastTotalBytes;
+      networkIn = (bytesDiff / timeDiff) / (1024 * 1024); // Convert to MB/s
+      networkOut = networkIn * 0.2; // Estimate upload as 20% of download
+      
+      console.log('Network Performance:', {
+        bytes: bytesDiff,
+        time: timeDiff,
+        speed: networkIn
+      });
+    }
+
+    lastTotalBytes = totalBytes;
+    lastTimestamp = currentTime;
   });
 
-  // Calculate speed in MB/s
-  const timeDiff = (currentTime - lastTimestamp) / 1000; // Convert to seconds
-  if (timeDiff > 0 && totalBytes > lastTotalBytes) {
-    const bytesDiff = totalBytes - lastTotalBytes;
-    networkIn = (bytesDiff / timeDiff) / (1024 * 1024); // Convert to MB/s
-    networkOut = networkIn * 0.2; // Estimate upload as 20% of download
-    
-    console.log('Network Performance:', {
-      bytes: bytesDiff,
-      time: timeDiff,
-      speed: networkIn
-    });
-  }
+  observer.observe({ 
+    entryTypes: ['resource', 'navigation'],
+    buffered: true
+  });
 
-  lastTotalBytes = totalBytes;
-  lastTimestamp = currentTime;
-});
+  // Create WebGL context
+  const canvas = document.createElement('canvas');
+  const gl = canvas.getContext('webgl2');
 
-// Start observing network performance
-observer.observe({ 
-  entryTypes: ['resource', 'navigation'],
-  buffered: true
-});
+  // Set up intervals
+  setInterval(generateTraffic, 1000);
+  setInterval(measureNetworkSpeed, 1000);
+  setInterval(() => {
+    gpuUsage = measureGPU();
+  }, 1000);
+}
 
 // Generate some network traffic periodically
 function generateTraffic() {
@@ -51,9 +66,6 @@ function generateTraffic() {
   const img = new Image();
   img.src = `https://picsum.photos/200/300?random=${Math.random()}`;
 }
-
-// Generate traffic every second
-setInterval(generateTraffic, 1000);
 
 // List of APIs to test network speed
 const TEST_URLS = [
@@ -100,18 +112,8 @@ async function measureNetworkSpeed() {
   }
 }
 
-// Start periodic measurements
-setInterval(measureNetworkSpeed, 1000);
-
-// Initial measurement
-measureNetworkSpeed();
-
 // GPU monitoring
 let gpuUsage = 0;
-
-// Create WebGL context for GPU measurements
-const canvas = document.createElement('canvas');
-const gl = canvas.getContext('webgl2');
 
 // GPU stress test and measurement
 function measureGPU() {
@@ -182,17 +184,24 @@ function measureGPU() {
   return usage;
 }
 
-// Update GPU measurements periodically
-setInterval(() => {
-  gpuUsage = measureGPU();
-}, 1000);
-
+// Export metrics function with client-side checks
 export async function getMetrics() {
+  if (!isClient) {
+    return {
+      timestamp: Date.now(),
+      cpu: 0,
+      memory: 0,
+      gpu: 0,
+      networkIn: 0,
+      networkOut: 0,
+      networkInterface: 'unknown',
+      networkSpeed: 0,
+    };
+  }
+
   const cpuUsage = await getCPUUsage();
-  
   const memory = (performance as any).memory;
   const memoryUsage = memory ? (memory.usedJSHeapSize / memory.jsHeapSizeLimit) * 100 : 0;
-
   const connection = (navigator as any).connection;
   const effectiveType = connection?.effectiveType || '4g';
   const rtt = connection?.rtt || 0;

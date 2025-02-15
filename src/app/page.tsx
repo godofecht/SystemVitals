@@ -1,9 +1,12 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { Chart } from "@/components/chart"
+import dynamic from 'next/dynamic'
 import { AboutModal } from "@/components/about-modal"
 import { useStore } from "@/lib/store"
+
+// Dynamically import the Chart component with no SSR
+const Chart = dynamic(() => import('@/components/chart'), { ssr: false })
 
 export default function Home() {
   const [isAboutOpen, setIsAboutOpen] = useState(false);
