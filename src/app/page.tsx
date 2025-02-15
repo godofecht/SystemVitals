@@ -74,15 +74,6 @@ export default function Home() {
               title="Graphics Processing"
               value={metrics.gpu}
             />
-
-            <Chart 
-              data={data} 
-              metric="temperature" 
-              color="#ea580c"
-              title="Thermal Monitor"
-              value={metrics.temperature}
-              unit="°C"
-            />
           </div>
 
           <div className="flex justify-center">

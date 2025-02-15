@@ -1,19 +1,15 @@
 import { create } from "zustand"
+import { getMetrics } from './metrics'
 
 interface SystemMetrics {
   timestamp: number;
   cpu: number;
   memory: number;
-  temperature: number;
   gpu: number;
   networkIn: number;
   networkOut: number;
   networkInterface: string;
   networkSpeed: number;
-  gpuTemp?: number;
-  gpuMemoryTotal?: number;
-  gpuMemoryUsed?: number;
-  gpuUtilization?: number;
 }
 
 interface Store {
@@ -21,7 +17,7 @@ interface Store {
   latestMetrics: SystemMetrics | null;
   loading: boolean;
   error: string | null;
-  ws: WebSocket | null;
+  intervalId: number | null;
   connect: () => void;
   disconnect: () => void;
 }
@@ -31,44 +27,32 @@ export const useStore = create<Store>((set, get) => ({
   latestMetrics: null,
   loading: false,
   error: null,
-  ws: null,
+  intervalId: null,
 
   connect: () => {
-    try {
-      const ws = new WebSocket('ws://localhost:8080');
-      
-      ws.onmessage = (event) => {
-        const newMetrics = JSON.parse(event.data);
+    const intervalId = window.setInterval(async () => {
+      try {
+        const metrics = await getMetrics();
         set((state) => ({
-          data: [...state.data.slice(-50), newMetrics],
-          latestMetrics: newMetrics,
+          data: [...state.data.slice(-50), metrics],
+          latestMetrics: metrics,
           loading: false,
           error: null
         }));
-      };
+      } catch (error) {
+        console.error('Error getting metrics:', error);
+        set({ error: 'Failed to get metrics', loading: false });
+      }
+    }, 100);  // Update every 100ms
 
-      ws.onerror = (error) => {
-        console.error('WebSocket error:', error);
-        set({ error: 'WebSocket error', loading: false });
-      };
-
-      ws.onclose = () => {
-        console.error('WebSocket disconnected');
-        set({ error: 'WebSocket disconnected', loading: false });
-        setTimeout(() => get().connect(), 5000);
-      };
-
-      set({ ws, loading: true, error: null });
-    } catch (error) {
-      set({ error: 'Failed to connect', loading: false });
-    }
+    set({ intervalId, loading: true, error: null });
   },
 
   disconnect: () => {
-    const { ws } = get();
-    if (ws) {
-      ws.close();
-      set({ ws: null });
+    const { intervalId } = get();
+    if (intervalId) {
+      window.clearInterval(intervalId);
+      set({ intervalId: null });
     }
   }
 })); 
