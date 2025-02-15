@@ -17,30 +17,45 @@ let metrics = {
   memory: 0,
   temperature: 0,
   gpu: 0,
+  gpuTemp: 0,
+  gpuMemoryTotal: 0,
+  gpuMemoryUsed: 0,
+  gpuUtilization: 0,
   networkIn: 0,
   networkOut: 0,
   networkInterface: '',
   networkSpeed: 0
 };
 
+// Get default network interface
+let defaultInterface = '';
+si.networkInterfaceDefault().then(iface => {
+  defaultInterface = iface;
+  console.log('Default network interface:', iface);
+});
+
 // Fast metrics update (CPU, Memory, Network) - Every 100ms
 async function updateFastMetrics() {
   try {
-    const [currentLoad, mem, networkStats] = await Promise.all([
+    const [currentLoad, mem, networkConnections] = await Promise.all([
       si.currentLoad(),
       si.mem(),
-      si.networkStats()
+      si.networkConnections()
     ]);
 
-    // Just use the first network interface's stats directly
+    // Get network stats specifically for the default interface
+    const networkStats = await si.networkStats(defaultInterface);
+    console.log('Network stats:', networkStats);
+
     metrics = {
       ...metrics,
       timestamp: Date.now(),
       cpu: parseFloat(currentLoad.currentLoad.toFixed(1)),
       memory: parseFloat((100 * mem.active / mem.total).toFixed(1)),
-      networkIn: parseFloat((networkStats[0]?.rx_sec / 1024 / 1024).toFixed(2)),  // Back to rx_sec
-      networkOut: parseFloat((networkStats[0]?.tx_sec / 1024 / 1024).toFixed(2)), // Back to tx_sec
-      networkInterface: networkStats[0]?.iface || 'unknown'
+      networkIn: parseFloat(((networkStats[0]?.rx_sec || 0) / 1024 / 1024).toFixed(2)),
+      networkOut: parseFloat(((networkStats[0]?.tx_sec || 0) / 1024 / 1024).toFixed(2)),
+      networkInterface: defaultInterface,
+      networkSpeed: networkStats[0]?.speed || 0
     };
 
   } catch (error) {
@@ -51,16 +66,35 @@ async function updateFastMetrics() {
 // Slow metrics update (Temperature, GPU) - Every 2 seconds
 async function updateSlowMetrics() {
   try {
-    const [temp, gpu] = await Promise.all([
+    const [temp, gpuData] = await Promise.all([
       si.cpuTemperature(),
       si.graphics()
     ]);
+
+    // Log full GPU data for debugging
+    console.log('GPU Data:', JSON.stringify(gpuData, null, 2));
+    
+    const gpu = gpuData.controllers[0]; // Get primary GPU
     
     metrics = {
       ...metrics,
       temperature: parseFloat((temp.main || temp.max || 0).toFixed(1)),
-      gpu: parseFloat((gpu.controllers[0]?.memoryUsed || 0).toFixed(1))
+      gpu: parseFloat((gpu?.utilizationGpu || 0).toFixed(1)), // GPU usage percentage
+      gpuTemp: parseFloat((gpu?.temperatureGpu || 0).toFixed(1)),
+      gpuMemoryTotal: parseFloat((gpu?.memoryTotal || 0).toFixed(1)),
+      gpuMemoryUsed: parseFloat((gpu?.memoryUsed || 0).toFixed(1)),
+      gpuUtilization: parseFloat((gpu?.utilizationGpu || 0).toFixed(1))
     };
+
+    // Log GPU metrics
+    console.log('GPU Metrics:', {
+      usage: metrics.gpu,
+      temp: metrics.gpuTemp,
+      memTotal: metrics.gpuMemoryTotal,
+      memUsed: metrics.gpuMemoryUsed,
+      util: metrics.gpuUtilization
+    });
+
   } catch (error) {
     console.error('Error updating slow metrics:', error);
   }

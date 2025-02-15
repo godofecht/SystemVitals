@@ -34,6 +34,7 @@ interface ChartProps {
   value?: number;
   networkInterface?: string;
   networkSpeed?: number;
+  subtitle?: string;
 }
 
 export function Chart({ 
@@ -45,7 +46,8 @@ export function Chart({
   title,
   value,
   networkInterface,
-  networkSpeed
+  networkSpeed,
+  subtitle
 }: ChartProps) {
   const chartData = {
     labels: data.map((d) => d.timestamp),
@@ -192,6 +194,11 @@ export function Chart({
       {multiline && networkInterface && (
         <div className="text-xs text-gray-500 mt-2 px-4 pb-4">
           Interface: {networkInterface} ({networkSpeed}Mbps)
+        </div>
+      )}
+      {subtitle && (
+        <div className="text-xs text-gray-500 mt-2 px-4 pb-4">
+          {subtitle}
         </div>
       )}
     </section>
