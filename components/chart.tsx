@@ -132,7 +132,12 @@ export function Chart({
           color: 'rgba(0, 0, 0, 0.05)',
         },
         ticks: {
-          callback: function(tickValue: number | string, index: number, ticks: any) {
+          callback: function(
+            this: any,
+            tickValue: string | number,
+            index: number,
+            ticks: any[]
+          ): string {
             return `${tickValue}${unit}`;
           },
           font: {
