@@ -2,21 +2,16 @@ name: Deploy to GitHub Pages
 
 on:
   push:
-    branches: [ main ]  # or 'master' depending on your default branch name
+    branches: [ main ]
   pull_request:
     branches: [ main ]
 
 permissions:
   contents: write
-  pages: write
-  id-token: write
 
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
 
     steps:
       - name: Checkout
@@ -53,10 +48,11 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           tag_name: v${{ github.run_number }}
-          release_name: Release v${{ github.run_number }}
+          release_name: Release ${{ github.run_number }}
           body: |
-            Deployed to: https://godofecht.github.io/systemvitals
+            New deployment to GitHub Pages
             
+            URL: https://godofecht.github.io/systemvitals
             Commit: ${{ github.sha }}
           draft: false
           prerelease: false 
