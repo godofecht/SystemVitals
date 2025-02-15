@@ -32,41 +32,15 @@ export const AboutModal: React.FC<AboutModalProps> = ({ isOpen, onClose }) => {
         maxWidth: '500px',
         color: 'white'
       }}>
-        {/* Header */}
-        <div className="px-6 py-4 border-b border-gray-800 flex justify-between items-center">
-          <h2 className="text-xl font-semibold text-white">About System Vitals</h2>
-        </div>
-
-        {/* Content */}
-        <div className="px-6 py-4">
-          <p className="text-gray-300 mb-4">
-            System Vitals is a real-time performance monitoring dashboard that provides instant visibility into your system's key metrics:
+        <div className="px-6 py-4 flex justify-between items-center">
+          <p className="text-gray-300">
+            Just a quick mini project by Abhishek Shivakumar
           </p>
-          
-          <ul className="space-y-2 text-gray-300 mb-4">
-            <li>• CPU utilization tracking</li>
-            <li>• Memory usage monitoring</li>
-            <li>• GPU performance metrics</li>
-            <li>• System temperature readings</li>
-            <li>• Network traffic analysis</li>
-          </ul>
-
-          <p className="text-gray-300 mb-4">
-            All metrics are updated in real-time with smooth animations, providing a clear and immediate understanding of your system's performance.
-          </p>
-
-          <p className="text-gray-400 text-sm">
-            Built with Next.js, Chart.js, and Tailwind CSS. Designed for both technical and non-technical users.
-          </p>
-        </div>
-
-        {/* Footer */}
-        <div className="px-6 py-4 bg-gray-900 flex justify-end rounded-b-lg">
           <button 
             onClick={onClose}
-            className="px-4 py-2 bg-gray-800 hover:bg-gray-700 rounded-lg text-white text-sm font-medium transition-colors"
+            className="ml-4 text-gray-400 hover:text-gray-300"
           >
-            Close
+            ✕
           </button>
         </div>
       </div>
