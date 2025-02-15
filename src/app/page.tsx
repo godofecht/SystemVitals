@@ -6,7 +6,10 @@ import { AboutModal } from "@/components/about-modal"
 import { useStore } from "@/lib/store"
 
 // Dynamically import the Chart component with no SSR
-const Chart = dynamic(() => import('@/components/chart'), { ssr: false })
+const Chart = dynamic(
+  () => import('@/components/chart').then(mod => mod.default),
+  { ssr: false }
+);
 
 export default function Home() {
   const [isAboutOpen, setIsAboutOpen] = useState(false);

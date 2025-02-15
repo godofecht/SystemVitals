@@ -37,7 +37,7 @@ interface ChartProps {
   subtitle?: string;
 }
 
-export function Chart({ 
+const Chart: React.FC<ChartProps> = ({ 
   data, 
   metric = 'cpu', 
   color = '#475569', 
@@ -48,7 +48,7 @@ export function Chart({
   networkInterface,
   networkSpeed,
   subtitle
-}: ChartProps) {
+}: ChartProps) => {
   const chartData = {
     labels: data.map((d) => d.timestamp),
     datasets: multiline ? 
@@ -208,4 +208,6 @@ export function Chart({
       )}
     </section>
   )
-} 
+}
+
+export default Chart; 
