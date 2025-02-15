@@ -1,59 +1,68 @@
 import { create } from "zustand"
 
-interface DataPoint {
-  timestamp: string;
+interface SystemMetrics {
+  timestamp: number;
   cpu: number;
   memory: number;
+  temperature: number;
   gpu: number;
   networkIn: number;
   networkOut: number;
-  temperature: number;
 }
 
-interface StoreState {
-  data: DataPoint[];
+interface Store {
+  data: SystemMetrics[];
+  latestMetrics: SystemMetrics | null;
   loading: boolean;
   error: string | null;
-  fetchData: () => Promise<void>;
+  ws: WebSocket | null;
+  connect: () => void;
+  disconnect: () => void;
 }
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'
-
-export const useStore = create<StoreState>((set) => ({
+export const useStore = create<Store>((set, get) => ({
   data: [],
+  latestMetrics: null,
   loading: false,
   error: null,
-  fetchData: async () => {
-    set({ loading: true });
-    try {
-      const now = new Date();
-      const time = now.toLocaleTimeString('en-US', { 
-        hour12: false,
-        hour: '2-digit',
-        minute: '2-digit',
-        second: '2-digit'
-      });
+  ws: null,
 
-      const baseFreq = Date.now() / 2000;
-      const newDataPoint = {
-        timestamp: time,
-        // Different frequencies and phases for each metric
-        cpu: Number((Math.sin(baseFreq) * 20 + 60).toFixed(1)),
-        memory: Number((Math.sin(baseFreq * 0.5 + 1) * 15 + 75).toFixed(1)),
-        gpu: Number((Math.sin(baseFreq * 0.7 + 2) * 25 + 50).toFixed(1)),
-        networkIn: Number((Math.sin(baseFreq * 0.3) * 30 + 40).toFixed(1)),
-        networkOut: Number((Math.sin(baseFreq * 0.4 + 3) * 20 + 35).toFixed(1)),
-        temperature: Number((Math.sin(baseFreq * 0.2 + 4) * 10 + 65).toFixed(1)),
+  connect: () => {
+    try {
+      const ws = new WebSocket('ws://localhost:8080');
+      
+      ws.onmessage = (event) => {
+        const newMetrics = JSON.parse(event.data);
+        set((state) => ({
+          data: [...state.data.slice(-50), newMetrics],
+          latestMetrics: newMetrics,
+          loading: false,
+          error: null
+        }));
       };
 
-      set(state => ({
-        data: [...state.data.slice(-49), newDataPoint],
-        error: null
-      }));
+      ws.onerror = (error) => {
+        console.error('WebSocket error:', error);
+        set({ error: 'WebSocket error', loading: false });
+      };
+
+      ws.onclose = () => {
+        console.error('WebSocket disconnected');
+        set({ error: 'WebSocket disconnected', loading: false });
+        setTimeout(() => get().connect(), 5000);
+      };
+
+      set({ ws, loading: true, error: null });
     } catch (error) {
-      set({ error: (error as Error).message });
-    } finally {
-      set({ loading: false });
+      set({ error: 'Failed to connect', loading: false });
     }
   },
+
+  disconnect: () => {
+    const { ws } = get();
+    if (ws) {
+      ws.close();
+      set({ ws: null });
+    }
+  }
 })); 

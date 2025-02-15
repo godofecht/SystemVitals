@@ -7,16 +7,15 @@ import { useStore } from "@/lib/store"
 
 export default function Home() {
   const [isAboutOpen, setIsAboutOpen] = useState(false);
-  const { fetchData, data, loading } = useStore()
-  const latestData = data[data.length - 1] || {
+  const { connect, disconnect, data, latestMetrics, loading } = useStore()
+  const metrics = latestMetrics || {
     cpu: 0, memory: 0, gpu: 0, networkIn: 0, networkOut: 0, temperature: 0
   };
 
   useEffect(() => {
-    fetchData();
-    const interval = setInterval(fetchData, 100);
-    return () => clearInterval(interval);
-  }, [fetchData]);
+    connect();
+    return () => disconnect();
+  }, [connect, disconnect]);
 
   return (
     <div className="min-h-screen bg-[#F8FAFC]">
@@ -49,7 +48,7 @@ export default function Home() {
               metric="cpu" 
               color="#2563eb"
               title="Processor Load"
-              value={latestData.cpu}
+              value={metrics.cpu}
             />
 
             <Chart 
@@ -57,7 +56,7 @@ export default function Home() {
               metric="memory" 
               color="#16a34a"
               title="Memory Status"
-              value={latestData.memory}
+              value={metrics.memory}
             />
 
             <Chart 
@@ -65,7 +64,7 @@ export default function Home() {
               metric="gpu" 
               color="#dc2626"
               title="Graphics Processing"
-              value={latestData.gpu}
+              value={metrics.gpu}
             />
 
             <Chart 
@@ -73,7 +72,7 @@ export default function Home() {
               metric="temperature" 
               color="#ea580c"
               title="Thermal Monitor"
-              value={latestData.temperature}
+              value={metrics.temperature}
               unit="°C"
             />
           </div>
@@ -88,6 +87,8 @@ export default function Home() {
                 { key: 'networkOut', color: '#a855f7', label: 'Outbound' }
               ]}
               unit=" MB/s"
+              networkInterface={latestMetrics?.networkInterface}
+              networkSpeed={latestMetrics?.networkSpeed}
             />
           </div>
         </div>

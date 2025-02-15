@@ -32,6 +32,8 @@ interface ChartProps {
   unit?: string;
   title?: string;
   value?: number;
+  networkInterface?: string;
+  networkSpeed?: number;
 }
 
 export function Chart({ 
@@ -41,7 +43,9 @@ export function Chart({
   multiline,
   unit = '%',
   title,
-  value
+  value,
+  networkInterface,
+  networkSpeed
 }: ChartProps) {
   const chartData = {
     labels: data.map((d) => d.timestamp),
@@ -99,7 +103,7 @@ export function Chart({
         }
       },
       currentValue: {
-        value: value?.toFixed(1) || '0.0',
+        value: typeof value === 'number' ? value.toFixed(1) : '0.0',
         unit: unit,
         font: {
           family: 'Space Grotesk, system-ui, sans-serif',
@@ -185,6 +189,11 @@ export function Chart({
       <div className="h-[200px] p-4">
         <Line data={chartData} options={options} />
       </div>
+      {multiline && networkInterface && (
+        <div className="text-xs text-gray-500 mt-2 px-4 pb-4">
+          Interface: {networkInterface} ({networkSpeed}Mbps)
+        </div>
+      )}
     </section>
   )
 } 
