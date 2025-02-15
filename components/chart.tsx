@@ -126,7 +126,9 @@ export function Chart({
           color: 'rgba(0, 0, 0, 0.05)',
         },
         ticks: {
-          callback: (value: number) => `${value}${unit}`,
+          callback: function(tickValue: number | string, index: number, ticks: any) {
+            return `${tickValue}${unit}`;
+          },
           font: {
             family: 'Space Grotesk, system-ui, sans-serif',
             size: 11
