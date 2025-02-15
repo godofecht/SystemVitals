@@ -4,7 +4,8 @@ const isClient = typeof window !== 'undefined';
 // Initialize variables only on client
 let networkIn = 0;
 let networkOut = 0;
-let gpuUsage = 0;
+let gpuUsage = 0;  // Only declare once
+let gl: WebGLRenderingContext | null = null;  // Declare gl at top level
 
 // Track network performance
 let lastTotalBytes = 0;
@@ -50,7 +51,7 @@ if (isClient) {
 
   // Create WebGL context
   const canvas = document.createElement('canvas');
-  const gl = canvas.getContext('webgl2');
+  gl = canvas.getContext('webgl2');  // Assign to top level gl
 
   // Set up intervals
   setInterval(generateTraffic, 1000);
@@ -111,9 +112,6 @@ async function measureNetworkSpeed() {
     console.error('Network measurement error:', error);
   }
 }
-
-// GPU monitoring
-let gpuUsage = 0;
 
 // GPU stress test and measurement
 function measureGPU() {
